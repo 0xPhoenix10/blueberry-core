@@ -1,14 +1,15 @@
 import '@typechain/hardhat';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
+import '@nomicfoundation/hardhat-network-helpers';
 import '@openzeppelin/hardhat-upgrades';
 import 'solidity-coverage';
 import 'hardhat-abi-exporter';
 import 'hardhat-contract-sizer';
 import 'hardhat-deploy';
-import 'hardhat-docgen'
-import '@hardhat-docgen/core'
-import '@hardhat-docgen/markdown'
+import 'hardhat-docgen';
+import '@hardhat-docgen/core';
+import '@hardhat-docgen/markdown';
 import { HardhatUserConfig } from 'hardhat/config';
 import dotenv from 'dotenv';
 
@@ -16,14 +17,14 @@ dotenv.config();
 
 let deployAccountKey: string;
 if (!process.env.DEPLOY_ACCOUNT_KEY) {
-  throw new Error("Please set your DEPLOY_ACCOUNT_KEY in a .env file");
+  throw new Error('Please set your DEPLOY_ACCOUNT_KEY in a .env file');
 } else {
   deployAccountKey = process.env.DEPLOY_ACCOUNT_KEY;
 }
 
 let alchemyapi: string;
 if (!process.env.ALCHEMY_API_KEY) {
-  throw new Error("Please set your ALCHEMY_API_KEY in a .env file");
+  throw new Error('Please set your ALCHEMY_API_KEY in a .env file');
 } else {
   alchemyapi = process.env.ALCHEMY_API_KEY;
 }
@@ -50,7 +51,7 @@ const config: HardhatUserConfig = {
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${alchemyapi}`,
         // blockNumber: 15284569,
-      }
+      },
     },
     mainnet: {
       accounts: [deployAccountKey],
@@ -66,7 +67,7 @@ const config: HardhatUserConfig = {
     },
   },
   abiExporter: {
-    path: "./abi",
+    path: './abi',
     runOnCompile: true,
     clear: true,
     flat: true,
@@ -85,8 +86,8 @@ const config: HardhatUserConfig = {
     except: ['/test/*', '/mock/*', '/hardhat-proxy/*'],
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
-  }
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
 };
 
 export default config;

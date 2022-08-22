@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@chainlink/contracts": "^0.4.1",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
     "@openzeppelin/contracts": "^4.7.3",
     "@openzeppelin/hardhat-upgrades": "^1.19.1",
     "chai-ethers": "0.0.1",

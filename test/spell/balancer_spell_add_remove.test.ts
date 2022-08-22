@@ -45,7 +45,7 @@ describe('Balancer Spell', () => {
   });
 
   describe('Basic', async () => {
-    it('Add / Remove 1x Testing', async () => {
+    it('Add / Remove Testing', async () => {
       const daiAddr = ADDRESS.DAI;
       const wethAddr = ADDRESS.WETH;
       const balancerPoolAddr = ADDRESS.BAL_WETH_DAI_8020;
@@ -83,10 +83,7 @@ describe('Balancer Spell', () => {
       await simpleOracle.deployed();
       await simpleOracle.setETHPx(
         [wethAddr, daiAddr],
-        [
-          '5192296858534827628530496329220096',
-          '8887571220661441971398610676149',
-        ]
+        [BigNumber.from(2).pow(112), BigNumber.from(2).pow(112).div(700)]
       );
 
       const BalancerPairOracleFactory = await ethers.getContractFactory(
@@ -276,6 +273,7 @@ describe('Balancer Spell', () => {
       await balancerSpellV1.deployed();
 
       blueberryBank.setWhitelistSpells([balancerSpellV1.address], [true]);
+      blueberryBank.setWhitelistTokens([dai.address], [true]);
       balancerSpellV1.setWhitelistLPTokens([balancerLP.address], [true]);
       // console.log(
       //   '========================================================================='
@@ -293,8 +291,8 @@ describe('Balancer Spell', () => {
 
       const daiAmt = BigNumber.from(10).pow(18).mul(400);
       const wethAmt = BigNumber.from(10).pow(18).mul(1600);
-      const lpAmt = BigNumber.from(10).pow(18).mul(4);
-      const borrowDaiAmt = BigNumber.from(0);
+      let lpAmt = BigNumber.from(10).pow(18).mul(4);
+      const borrowDaiAmt = BigNumber.from(10).pow(18).mul(100);
       const borrowWethAmt = BigNumber.from(0);
 
       const totalDaiAmt = daiAmt.add(borrowDaiAmt);
@@ -503,6 +501,52 @@ describe('Balancer Spell', () => {
       expect(curETHBal.sub(prevETHBal).add(wethRepay)).to.be.roughlyNear(
         curBRes.sub(prevBRes).mul(-1)
       );
+
+      // console.log(
+      //   '========================================================================='
+      // );
+      // console.log('Case 3. add & remove all LP');
+
+      lpAmt = BigNumber.from(10).pow(18).mul(10);
+
+      prevLPBal = await balancerLP.balanceOf(alice.address);
+
+      await blueberryBank.connect(alice).execute(
+        0,
+        balancerSpellV1.address,
+        balancerSpellV1.interface.encodeFunctionData('addLiquidityWERC20', [
+          balancerLP.address,
+          {
+            amtAUser: 0,
+            amtBUser: 0,
+            amtLPUser: lpAmt,
+            amtABorrow: 0,
+            amtBBorrow: 0,
+            amtLPBorrow: 0,
+            amtLPDesired: 0,
+          },
+        ])
+      );
+
+      await blueberryBank.connect(alice).execute(
+        2,
+        balancerSpellV1.address,
+        balancerSpellV1.interface.encodeFunctionData('removeLiquidityWERC20', [
+          balancerLP.address,
+          {
+            amtLPTake: BigNumber.from(2).pow(256).sub(1),
+            amtLPWithdraw: lpAmt,
+            amtARepay: 0,
+            amtBRepay: 0,
+            amtLPRepay: 0,
+            amtAMin: 0,
+            amtBMin: 0,
+          },
+        ])
+      );
+
+      curLPBal = await balancerLP.balanceOf(alice.address);
+      expect(prevLPBal).to.be.equal(curLPBal);
     }).timeout(1000000);
   });
 });
