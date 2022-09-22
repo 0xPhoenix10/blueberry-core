@@ -2,12 +2,10 @@
 
 pragma solidity ^0.8.9;
 
-import '@openzeppelin/contracts/proxy/utils/Initializable.sol';
-
 import '../interfaces/IKeep3rV1Oracle.sol';
 import '../interfaces/uniswap/v2/IUniswapV2Pair.sol';
 
-contract BaseKP3ROracle is Initializable {
+contract BaseKP3ROracle {
     uint256 public constant MIN_TWAP_TIME = 15 minutes;
     uint256 public constant MAX_TWAP_TIME = 60 minutes;
 
