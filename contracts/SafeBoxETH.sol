@@ -5,12 +5,12 @@ pragma solidity ^0.8.9;
 import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 
-import './Governable.sol';
 import './interfaces/compound/ICErc20.sol';
 import './interfaces/IWETH.sol';
 
-contract SafeBoxETH is Governable, ERC20, ReentrancyGuard {
+contract SafeBoxETH is Ownable, ERC20, ReentrancyGuard {
     event Claim(address user, uint256 amount);
 
     ICErc20 public immutable cToken;
@@ -26,7 +26,6 @@ contract SafeBoxETH is Governable, ERC20, ReentrancyGuard {
         string memory _symbol
     ) ERC20(_name, _symbol) {
         IWETH _weth = IWETH(_cToken.underlying());
-        __Governable__init();
         cToken = _cToken;
         weth = _weth;
         relayer = msg.sender;
@@ -37,12 +36,12 @@ contract SafeBoxETH is Governable, ERC20, ReentrancyGuard {
         return cToken.decimals();
     }
 
-    function setRelayer(address _relayer) external onlyGov {
+    function setRelayer(address _relayer) external onlyOwner {
         relayer = _relayer;
     }
 
     function updateRoot(bytes32 _root) external {
-        require(msg.sender == relayer || msg.sender == governor, '!relayer');
+        require(msg.sender == relayer || msg.sender == owner(), '!relayer');
         root = _root;
     }
 
@@ -79,7 +78,7 @@ contract SafeBoxETH is Governable, ERC20, ReentrancyGuard {
         emit Claim(msg.sender, send);
     }
 
-    function adminClaim(uint256 amount) external onlyGov {
+    function adminClaim(uint256 amount) external onlyOwner {
         weth.withdraw(amount);
         (bool success, ) = msg.sender.call{value: amount}(new bytes(0));
         require(success, '!adminClaim');

@@ -6,8 +6,8 @@ import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/utils/cryptography/MerkleProof.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 
-import './Governable.sol';
 import './interfaces/compound/ICErc20.sol';
 import './interfaces/uniswap/v3/IUniswapV3Pool.sol';
 import './interfaces/uniswap/v3/ISwapRouter02.sol';
@@ -15,7 +15,7 @@ import './interfaces/uniswap/v3/IUniswapV3PositionsNFT.sol';
 import './interfaces/IWETH.sol';
 import './libraries/UniV3/PoolActions.sol';
 
-contract SafeBoxUniV3LP is Governable, ERC20, ReentrancyGuard {
+contract SafeBoxUniV3LP is Ownable, ERC20, ReentrancyGuard {
     using SafeERC20 for IERC20;
     using PoolVariables for IUniswapV3Pool;
 
@@ -56,7 +56,6 @@ contract SafeBoxUniV3LP is Governable, ERC20, ReentrancyGuard {
         int24 _tick_lower,
         int24 _tick_upper
     ) ERC20(_name, _symbol) {
-        __Governable__init();
         pool = IUniswapV3Pool(_pool);
         token0 = IERC20(pool.token0());
         token1 = IERC20(pool.token1());
@@ -67,12 +66,12 @@ contract SafeBoxUniV3LP is Governable, ERC20, ReentrancyGuard {
         relayer = msg.sender;
     }
 
-    function setRelayer(address _relayer) external onlyGov {
+    function setRelayer(address _relayer) external onlyOwner {
         relayer = _relayer;
     }
 
     function updateRoot(bytes32 _root) external {
-        require(msg.sender == relayer || msg.sender == governor, '!relayer');
+        require(msg.sender == relayer || msg.sender == owner(), '!relayer');
         root = _root;
     }
 

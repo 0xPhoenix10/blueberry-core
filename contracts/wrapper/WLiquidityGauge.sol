@@ -5,8 +5,8 @@ pragma solidity ^0.8.9;
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC1155/ERC1155.sol';
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 
-import '../Governable.sol';
 import '../utils/BBMath.sol';
 import '../interfaces/IERC20Wrapper.sol';
 import '../interfaces/curve/ICurveRegistry.sol';
@@ -20,7 +20,7 @@ contract WLiquidityGauge is
     ERC1155('WLiquidityGauge'),
     ReentrancyGuard,
     IERC20Wrapper,
-    Governable
+    Ownable
 {
     using BBMath for uint256;
     using SafeERC20 for IERC20;
@@ -36,7 +36,6 @@ contract WLiquidityGauge is
     mapping(uint256 => mapping(uint256 => GaugeInfo)) public gauges;
 
     constructor(ICurveRegistry _registry, IERC20 _crv) {
-        __Governable__init();
         registry = _registry;
         crv = _crv;
     }
@@ -110,7 +109,7 @@ contract WLiquidityGauge is
     /// @dev Register curve gauge to storage given pool id and gauge id
     /// @param pid Pool id
     /// @param gid Gauge id
-    function registerGauge(uint256 pid, uint256 gid) external onlyGov {
+    function registerGauge(uint256 pid, uint256 gid) external onlyOwner {
         require(
             address(gauges[pid][gid].impl) == address(0),
             'gauge already exists'

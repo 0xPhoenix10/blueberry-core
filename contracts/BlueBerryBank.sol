@@ -4,9 +4,9 @@ pragma solidity ^0.8.9;
 
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/math/Math.sol';
 
-import './Governable.sol';
 import './utils/ERC1155NaiveReceiver.sol';
 import './interfaces/IBank.sol';
 import './interfaces/IOracle.sol';
@@ -20,7 +20,7 @@ library BlueBerrySafeMath {
     }
 }
 
-contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
+contract BlueBerryBank is Ownable, ERC1155NaiveReceiver, IBank {
     using BlueBerrySafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -111,7 +111,6 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
     /// @param _oracle The oracle smart contract address.
     /// @param _feeBps The fee collected to BlueBerry bank.
     function initialize(IOracle _oracle, uint256 _feeBps) external {
-        __Governable__init();
         _GENERAL_LOCK = _NOT_ENTERED;
         _IN_EXEC_LOCK = _NOT_ENTERED;
         POSITION_ID = _NO_ID;
@@ -134,7 +133,7 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
 
     /// @dev Set allowContractCalls
     /// @param ok The status to set allowContractCalls to (false = onlyEOA)
-    function setAllowContractCalls(bool ok) external onlyGov {
+    function setAllowContractCalls(bool ok) external onlyOwner {
         allowContractCalls = ok;
     }
 
@@ -144,7 +143,7 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
     function setWhitelistSpells(
         address[] calldata spells,
         bool[] calldata statuses
-    ) external onlyGov {
+    ) external onlyOwner {
         require(
             spells.length == statuses.length,
             'spells & statuses length mismatched'
@@ -160,7 +159,7 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
     function setWhitelistTokens(
         address[] calldata tokens,
         bool[] calldata statuses
-    ) external onlyGov {
+    ) external onlyOwner {
         require(
             tokens.length == statuses.length,
             'tokens & statuses length mismatched'
@@ -180,7 +179,7 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
     function whitelistContracts(
         address[] calldata users,
         bool[] calldata statuses
-    ) external onlyGov {
+    ) external onlyOwner {
         require(
             users.length == statuses.length,
             'users & statuses length mismatched'
@@ -198,7 +197,7 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
 
     /// @dev Set bank status
     /// @param _bankStatus new bank status to change to
-    function setBankStatus(uint256 _bankStatus) external onlyGov {
+    function setBankStatus(uint256 _bankStatus) external onlyOwner {
         bankStatus = _bankStatus;
     }
 
@@ -448,7 +447,7 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
         address token,
         address cToken,
         address safeBox
-    ) external onlyGov {
+    ) external onlyOwner {
         Bank storage bank = banks[token];
         require(!cTokenInBank[cToken], 'cToken already exists');
         require(!bank.isListed, 'bank already exists');
@@ -466,7 +465,7 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
 
     /// @dev Set the oracle smart contract address.
     /// @param _oracle The new oracle smart contract address.
-    function setOracle(IOracle _oracle) external onlyGov {
+    function setOracle(IOracle _oracle) external onlyOwner {
         require(
             address(_oracle) != address(0),
             'cannot set zero address oracle'
@@ -477,7 +476,7 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
 
     /// @dev Set the fee bps value that BlueBerry bank charges.
     /// @param _feeBps The new fee bps value.
-    function setFeeBps(uint256 _feeBps) external onlyGov {
+    function setFeeBps(uint256 _feeBps) external onlyOwner {
         require(_feeBps <= 10000, 'fee too high');
         feeBps = _feeBps;
         emit SetFeeBps(_feeBps);
@@ -487,7 +486,7 @@ contract BlueBerryBank is Governable, ERC1155NaiveReceiver, IBank {
     /// @param amount The amount of tokens to withdraw.
     function withdrawReserve(address token, uint256 amount)
         external
-        onlyGov
+        onlyOwner
         lock
     {
         Bank storage bank = banks[token];

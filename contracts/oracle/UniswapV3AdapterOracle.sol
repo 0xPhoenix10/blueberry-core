@@ -2,13 +2,14 @@
 
 pragma solidity ^0.8.9;
 
-import '../Governable.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
+
 import '../interfaces/IERC20Ex.sol';
 import '../interfaces/IBaseOracle.sol';
 import '../interfaces/uniswap/v3/IUniswapV3Pool.sol';
 import '../libraries/UniV3/OracleLibrary.sol';
 
-contract UniswapV3AdapterOracle is IBaseOracle, Governable {
+contract UniswapV3AdapterOracle is IBaseOracle, Ownable {
     event SetPoolETH(address token, address pool);
     event SetPoolStable(address token, address pool);
     event SetTimeAgo(address token, uint32 timeAgo);
@@ -19,16 +20,14 @@ contract UniswapV3AdapterOracle is IBaseOracle, Governable {
     mapping(address => address) public poolsETH; // Mapping from token address to token/ETH pool address
     mapping(address => address) public poolsStable; // Mapping from token address to token/(USDT/USDC/DAI) pool address
 
-    constructor() {
-        __Governable__init();
-    }
+    constructor() {}
 
     /// @dev Set price reference for ETH pair
     /// @param tokens list of tokens to set reference
     /// @param pools list of reference pool contract addresses
     function setPoolsETH(address[] calldata tokens, address[] calldata pools)
         external
-        onlyGov
+        onlyOwner
     {
         require(
             tokens.length == pools.length,
@@ -45,7 +44,7 @@ contract UniswapV3AdapterOracle is IBaseOracle, Governable {
     /// @param pools list of reference pool contract addresses
     function setPoolsStable(address[] calldata tokens, address[] calldata pools)
         external
-        onlyGov
+        onlyOwner
     {
         require(
             tokens.length == pools.length,
@@ -62,7 +61,7 @@ contract UniswapV3AdapterOracle is IBaseOracle, Governable {
     /// @param times list of timeAgos to set to
     function setTimeAgos(address[] calldata tokens, uint32[] calldata times)
         external
-        onlyGov
+        onlyOwner
     {
         require(
             tokens.length == times.length,

@@ -3,10 +3,10 @@
 pragma solidity ^0.8.9;
 pragma experimental ABIEncoderV2;
 
-import '../Governable.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 import '../interfaces/IBaseOracle.sol';
 
-contract AggregatorOracle is IBaseOracle, Governable {
+contract AggregatorOracle is IBaseOracle, Ownable {
     event SetPrimarySources(
         address indexed token,
         uint256 maxPriceDeviation,
@@ -23,9 +23,7 @@ contract AggregatorOracle is IBaseOracle, Governable {
     uint256 public constant MIN_PRICE_DEVIATION = 1e18; // min price deviation
     uint256 public constant MAX_PRICE_DEVIATION = 1.5e18; // max price deviation
 
-    constructor() {
-        __Governable__init();
-    }
+    constructor() {}
 
     /// @dev Set oracle primary sources for the token
     /// @param token Token address to set oracle sources
@@ -35,7 +33,7 @@ contract AggregatorOracle is IBaseOracle, Governable {
         address token,
         uint256 maxPriceDeviation,
         IBaseOracle[] memory sources
-    ) external onlyGov {
+    ) external onlyOwner {
         _setPrimarySources(token, maxPriceDeviation, sources);
     }
 
@@ -47,7 +45,7 @@ contract AggregatorOracle is IBaseOracle, Governable {
         address[] memory tokens,
         uint256[] memory maxPriceDeviationList,
         IBaseOracle[][] memory allSources
-    ) external onlyGov {
+    ) external onlyOwner {
         require(tokens.length == allSources.length, 'inconsistent length');
         require(
             tokens.length == maxPriceDeviationList.length,
